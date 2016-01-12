@@ -13,7 +13,7 @@ composer require --dev hotel-quickly/nette-phpunit
 ```
 
 #### Usage
-In order to use Database test case, you must extend your base class from `HQTest\AbstractDbTestCase` and implement these 3 methods
+In order to use Database test case, you must extend your base class from `HQ\Test\AbstractDbTestCase` and implement these 3 methods
 
 1. `getContainer` - This method will return `Nette\Di\Container` instance. 
 2. `getConnections` - Return an array of `HQ\Test\Connection\AbstractConnection(connectionName, baseSchema, ...)` connections object.

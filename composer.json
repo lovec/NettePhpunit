@@ -9,10 +9,11 @@
             "email": "me@rezigned.com"
         }
     ],
-    "require": {},
-    "require-dev": {
+    "require": {
         "phpunit/phpunit": "^5.1",
         "phpunit/dbunit": "^2.0"
+    },
+    "require-dev": {
     },
     "autoload": {
         "psr-4": {
