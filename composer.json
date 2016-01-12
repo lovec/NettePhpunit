@@ -1,0 +1,22 @@
+{
+    "name": "hotel-quickly/nette-phpunit",
+    "description": "Nette + PHPunit + Multiple dbs + fixtures",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Rezigned Kung",
+            "email": "me@rezigned.com"
+        }
+    ],
+    "require": {},
+    "require-dev": {
+        "phpunit/phpunit": "^5.1",
+        "phpunit/dbunit": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "HQ\\Test\\": "./src/"
+        }
+    }
+}
