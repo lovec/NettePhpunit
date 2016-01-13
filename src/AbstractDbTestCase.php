@@ -10,6 +10,8 @@ abstract class AbstractDbTestCase extends AbstractTestCase
 {
 	use PHPUnit_Extensions_Database_TestCase_Trait;
 
+	const ENV_CREATE_SCHEMA = 'UNITTEST_CREATE_SCHEMA';
+
 	protected $initialized;
 	protected static $started;
 
@@ -27,6 +29,13 @@ abstract class AbstractDbTestCase extends AbstractTestCase
 	 * @var \PHPUnit_Extensions_Database_ITester[]
 	 */
 	private $databaseTesters = [];
+
+	/**
+	 * This will improve test speed when we execute it later
+	 *
+	 * @var bool
+	 */
+	protected $forceCreateSchema = true;
 
 	/**
 	 * @return AbstractConnection[]
@@ -80,6 +89,10 @@ abstract class AbstractDbTestCase extends AbstractTestCase
 
 	protected function initDatabases()
 	{
+		if (!$this->shouldCreateSchema()) {
+			return;
+		}
+
 		foreach($this->getInitializedConnections() as $connection) {
 
 			// build schema
@@ -174,5 +187,10 @@ abstract class AbstractDbTestCase extends AbstractTestCase
 		}
 
 		return $this->connections = $this->getConnections();
+	}
+
+	private function shouldCreateSchema()
+	{
+		return filter_var(getenv(self::ENV_CREATE_SCHEMA) ?: $this->forceCreateSchema, FILTER_VALIDATE_BOOLEAN) === true;
 	}
 }

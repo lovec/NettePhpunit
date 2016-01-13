@@ -18,7 +18,7 @@ In order to use Database test case, you must extend your base class from `HQ\Tes
 1. `getContainer` - This method will return `Nette\Di\Container` instance. 
 2. `getConnections` - Return an array of `HQ\Test\Connection\AbstractConnection(connectionName, baseSchema, ...)` connections object.
   * **connectionName** - A database connection name, which will be used as a prefix of fixture file. 
-  * **baseSchema** - 
+  * **baseSchema** - Database schema which includes `CREATE TABLE ...` sql statements. 
 3. `getBaseFixtureDir` - Return a base directory for searching base fixture file (see 
 
 ```php
@@ -61,7 +61,7 @@ This is a primary fixtures that will be loaded for all test cases (think of it a
 ```txt
 test
   +- YourBaseDbTestCase.php
-  +- default-fixtures.{yaml, json, php} 
+  +- <connection-name>-fixtures.{yaml, json, php} e.g. default-fixtures.json 
 ```
 
 ##### 2. class fixtures
@@ -71,7 +71,7 @@ This will be loaded each time test case was invoked.
 test
   +- User
     +- UserTest.php
-    +- default-fixtures.{yaml, json, php}
+    +- <connection-name>-fixtures.{yaml, json, php} e.g. default-fixtures.json
 ```
 
 ##### 3. instance fixtures
@@ -83,7 +83,7 @@ class MyTest extends MyBaseDbTestCase
     public function getFixtures()
     {
         return [
-            'default' => [
+            '<connection-name>' => [
                 ...
             ]
         ]
@@ -134,6 +134,8 @@ return [
     ]
 ]
 ```
+## Improving testing speed
+Due to the overhead of creating database schema at the beginning of the tests (only once). This might slow down your test suites speed. You can avoid this problem by exporting `UNITTEST_CREATE_SCHEMA=false` env and then run unit test as usual. This will make it skips database schema create overhead. 
 
 ## Common problems
 
@@ -155,4 +157,6 @@ user:
 This will cause the above error. To fix this, just make sure you define the *same fields* on each fixtures.
 
 
-* zlib.output_compression
+* ErrorException: ini_set(): Cannot change zlib.output_compression - headers already sent
+
+This happens when Nette has php ini `zlib.output_compression` enabled in the container. Removing this config during testing will fix this error
