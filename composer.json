@@ -14,10 +14,16 @@
         "phpunit/dbunit": "^2.0"
     },
     "require-dev": {
+        "nette/di": "^2.3"
     },
     "autoload": {
         "psr-4": {
             "HQ\\Test\\": "./src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "NettePhpunit\\Test\\": "./test/"
         }
     }
 }
