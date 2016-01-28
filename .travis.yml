@@ -1,0 +1,24 @@
+language: php
+php:
+    - 5.6
+    - 7.0
+
+sudo: false
+
+script:
+    - ./vendor/bin/phpunit test/
+
+services:
+    - mysql
+
+before_script:
+
+    # install composer
+    - composer install --no-interaction --prefer-source -vvv
+
+    # Create db
+    - mysql -e 'create database hq_siteminder;'
+
+    # for PHPUnit
+    - cp test/config.example.php test/config.php
+
