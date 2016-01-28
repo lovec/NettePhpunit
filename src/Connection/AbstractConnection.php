@@ -37,9 +37,7 @@ abstract class AbstractConnection
 
 	public function createDatabaseSchema($schemaContent)
 	{
-		$this->execute('SET FOREIGN_KEY_CHECKS=0');
 		$this->execute($schemaContent);
-		$this->execute('SET FOREIGN_KEY_CHECKS=1');
 	}
 
 	/**
@@ -71,5 +69,22 @@ abstract class AbstractConnection
 		$stmt->execute($params);
 
 		return $stmt;
+	}
+
+	public function enableForeignKeyChecks()
+	{
+		$this->setForeignKeyChecks(true);
+	}
+
+	public function disableForeignKeyChecks()
+	{
+		$this->setForeignKeyChecks(false);
+	}
+
+	public function setForeignKeyChecks($enable = true)
+	{
+		$this->execute(
+			sprintf('SET FOREIGN_KEY_CHECKS=%d', $enable)
+		);
 	}
 }

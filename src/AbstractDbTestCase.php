@@ -37,6 +37,15 @@ abstract class AbstractDbTestCase extends AbstractTestCase
 	 */
 	protected $forceCreateSchema = true;
 
+	protected $disableSchemaForeignKeyChecks = true;
+
+	/**
+	 * Disable foreign keys check when importing data fixtures
+	 *
+	 * @var bool
+	 */
+	protected $disableFixturesForeignKeyChecks = true;
+
 	/**
 	 * @return AbstractConnection[]
 	 */
@@ -96,8 +105,12 @@ abstract class AbstractDbTestCase extends AbstractTestCase
 		foreach($this->getInitializedConnections() as $connection) {
 
 			// build schema
-			$schemaContent = $this->getSchemaContent($connection->getSchemaFile());
-			$connection->createDatabaseSchema($schemaContent);
+			$this->executeQueryWithForeignKeySetting(function() use ($connection) {
+
+				$schemaContent = $this->getSchemaContent($connection->getSchemaFile());
+				$connection->createDatabaseSchema($schemaContent);
+
+			}, $connection, $this->disableSchemaForeignKeyChecks);
 		}
 	}
 
@@ -116,13 +129,7 @@ abstract class AbstractDbTestCase extends AbstractTestCase
 		foreach($this->getInitializedConnections() as $connection) {
 			$connection->beginTransaction();
 
-			$fixtureSet = $fixtureLoader->load($connection, $this);
-
-			// create database tester & setup tasks
-			$databaseTester = $this->createDatabaseTester($connection);
-			$databaseTester->setSetUpOperation($this->getSetUpOperation());
-			$databaseTester->setDataSet($fixtureSet);
-			$databaseTester->onSetUp();
+			$this->loadFixtures($fixtureLoader, $connection);
 		}
 	}
 
@@ -192,5 +199,39 @@ abstract class AbstractDbTestCase extends AbstractTestCase
 	private function shouldCreateSchema()
 	{
 		return filter_var(getenv(self::ENV_CREATE_SCHEMA) ?: $this->forceCreateSchema, FILTER_VALIDATE_BOOLEAN) === true;
+	}
+
+	/**
+	 * Load database fixtures
+	 *
+	 * @param \HQ\Test\FixtureLoader $fixtureLoader
+	 * @param AbstractConnection $connection
+	 */
+	protected function loadFixtures(FixtureLoader $fixtureLoader, AbstractConnection $connection)
+	{
+		$this->executeQueryWithForeignKeySetting(function() use ($fixtureLoader, $connection) {
+
+			$fixtureSet = $fixtureLoader->load($connection, $this);
+
+			// create database tester & setup tasks
+			$databaseTester = $this->createDatabaseTester($connection);
+			$databaseTester->setSetUpOperation(\PHPUnit_Extensions_Database_Operation_Factory::INSERT());
+			$databaseTester->setDataSet($fixtureSet);
+			$databaseTester->onSetUp();
+
+		}, $connection, $this->disableFixturesForeignKeyChecks);
+	}
+
+	protected function executeQueryWithForeignKeySetting(\Closure $closure, AbstractConnection $connection, $disableForeignKeyChecks = true)
+	{
+		if ($disableForeignKeyChecks) {
+			$connection->disableForeignKeyChecks();
+		}
+
+		$closure();
+
+		if ($disableForeignKeyChecks) {
+			$connection->enableForeignKeyChecks();
+		}
 	}
 }

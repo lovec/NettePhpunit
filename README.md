@@ -1,4 +1,4 @@
-# Nette PHPUnit
+# Nette PHPUnit [![Build Status](https://travis-ci.org/HotelQuickly/NettePhpunit.svg?branch=master)](https://travis-ci.org/HotelQuickly/NettePhpunit)
 
 * Support multiple database connections
 * Support multiple fixtures formats loading (for each connection)
