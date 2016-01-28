@@ -17,7 +17,7 @@ before_script:
     - composer install --no-interaction --prefer-source -vvv
 
     # Create db
-    - mysql -e 'create database hq_siteminder;'
+    - mysql -e 'create database testdb;'
 
     # for PHPUnit
     - cp test/config.example.php test/config.php
