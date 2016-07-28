@@ -70,6 +70,20 @@ abstract class AbstractConnection
 
 		return $stmt;
 	}
+	
+	public function explodeAndExecute($sql)
+    	{
+		$queryArray = explode(";\n", $sql);
+
+		foreach($queryArray as $queryArrayItem) {
+			$queryArrayItem = trim($queryArrayItem);
+			if (empty($queryArrayItem)) {
+				continue;
+			}
+
+			$this->getPdo()->exec($queryArrayItem);
+		}
+	}
 
 	public function enableForeignKeyChecks()
 	{
