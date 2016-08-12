@@ -245,9 +245,11 @@ abstract class AbstractDbTestCase extends AbstractTestCase
 	protected function cleanTables(array $tableNames)
 	{
 		foreach ($this->getInitializedConnections() as $connection) {
+			$connection->disableForeignKeyChecks();
 			foreach ($tableNames as $table) {
 				$connection->execute('DELETE FROM ' . $table . ' WHERE id > 0');
 			}
+			$connection->enableForeignKeyChecks();
 		}
 	}
 }
