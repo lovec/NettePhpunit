@@ -14,6 +14,7 @@ abstract class AbstractDbTestCase extends AbstractTestCase
 
 	protected $initialized;
 	protected static $started;
+	protected $isInTransactionMode = true;
 
 	/**
 	 * @var FixtureLoader
@@ -89,7 +90,7 @@ abstract class AbstractDbTestCase extends AbstractTestCase
 		$this->initContainer();
 		$this->initialized = true;
 
-		// do it only once, for db setup
+		// do it only once, for db setup or repeat if not in transaction mode
 		if (!self::$started) {
 			$this->initDatabases();
 			self::$started = true;
@@ -127,7 +128,9 @@ abstract class AbstractDbTestCase extends AbstractTestCase
 	{
 		$fixtureLoader = $this->getFixtureLoader();
 		foreach($this->getInitializedConnections() as $connection) {
-			$connection->beginTransaction();
+			if ($this->isInTransactionMode) {
+				$connection->beginTransaction();
+			}
 
 			$this->loadFixtures($fixtureLoader, $connection);
 		}
@@ -136,6 +139,9 @@ abstract class AbstractDbTestCase extends AbstractTestCase
 	protected function closeTransactions()
 	{
 		foreach ($this->getInitializedConnections() as $connection) {
+			if (!$this->isInTransactionMode) {
+				continue;
+			}
 			$connection->rollBack();
 		}
 	}
@@ -232,6 +238,16 @@ abstract class AbstractDbTestCase extends AbstractTestCase
 
 		if ($disableForeignKeyChecks) {
 			$connection->enableForeignKeyChecks();
+		}
+	}
+
+
+	protected function cleanTables(array $tableNames)
+	{
+		foreach ($this->getInitializedConnections() as $connection) {
+			foreach ($tableNames as $table) {
+				$connection->execute('DELETE FROM ' . $table . ' WHERE id > 0');
+			}
 		}
 	}
 }
