@@ -33,4 +33,9 @@ class NetteConnection extends AbstractConnection
 	{
 		return $this->context->getConnection()->getPdo();
 	}
+
+    public function disconnect()
+    {
+        $this->context->getConnection()->disconnect();
+    }
 }
