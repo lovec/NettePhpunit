@@ -101,4 +101,6 @@ abstract class AbstractConnection
 			sprintf('SET FOREIGN_KEY_CHECKS=%d', $enable)
 		);
 	}
+
+    abstract public function disconnect();
 }

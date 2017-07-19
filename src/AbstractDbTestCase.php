@@ -79,6 +79,9 @@ abstract class AbstractDbTestCase extends AbstractTestCase
 		$this->afterTearDown();
 
 		$this->databaseTesters = null;
+		foreach ($this->connections as $connection) {
+		    $connection->disconnect();
+        }
 	}
 
 	protected function init()

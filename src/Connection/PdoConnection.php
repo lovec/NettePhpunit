@@ -31,4 +31,9 @@ class PdoConnection extends AbstractConnection
 	{
 		return $this->pdo;
 	}
+
+    public function disconnect()
+    {
+        $this->pdo = null;
+    }
 }
