@@ -2,13 +2,12 @@
 
 namespace HQ\Test;
 
-use PHPUnit_Extensions_Database_TestCase_Trait;
 use HQ\Test\Connection\AbstractConnection;
 use HQ\Test\FixtureLoader;
 
 abstract class AbstractDbTestCase extends AbstractTestCase
 {
-	use PHPUnit_Extensions_Database_TestCase_Trait;
+	use \PHPUnit\DbUnit\TestCaseTrait;
 
 	const ENV_CREATE_SCHEMA = 'UNITTEST_CREATE_SCHEMA';
 
@@ -63,7 +62,7 @@ abstract class AbstractDbTestCase extends AbstractTestCase
 		return [];
 	}
 
-	public function setUp()
+	public function setUp(): void
 	{
 		$this->init();
 
@@ -72,7 +71,7 @@ abstract class AbstractDbTestCase extends AbstractTestCase
 		$this->afterSetup();
 	}
 
-	public function tearDown()
+	public function tearDown(): void
 	{
 		$this->beforeTearDown();
 		$this->closeTransactions();
@@ -151,7 +150,7 @@ abstract class AbstractDbTestCase extends AbstractTestCase
 
 	private function createDatabaseTester(AbstractConnection $connection)
 	{
-		return new \PHPUnit_Extensions_Database_DefaultTester(
+		return new \PHPUnit\DbUnit\DefaultTester(
 			$this->createDefaultDBConnection(
 				$connection->getPdo()
 			)
@@ -224,7 +223,7 @@ abstract class AbstractDbTestCase extends AbstractTestCase
 
 			// create database tester & setup tasks
 			$databaseTester = $this->createDatabaseTester($connection);
-			$databaseTester->setSetUpOperation(\PHPUnit_Extensions_Database_Operation_Factory::INSERT());
+			$databaseTester->setSetUpOperation(\PHPUnit\DbUnit\Operation\Factory::INSERT());
 			$databaseTester->setDataSet($fixtureSet);
 			$databaseTester->onSetUp();
 

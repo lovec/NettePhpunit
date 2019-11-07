@@ -2,7 +2,7 @@
 
 namespace HQ\Test;
 
-use PHPUnit_Extensions_Database_DataSet_CompositeDataSet as CompositeDataSet;
+use PHPUnit\DbUnit\DataSet;
 use HQ\Test\Connection\AbstractConnection;
 
 class FixtureLoader
@@ -27,11 +27,11 @@ class FixtureLoader
 	 *
 	 * @param AbstractConnection $connection
 	 * @param AbstractDbTestCase $testCase
-	 * @return CompositeDataSet
+	 * @return DataSet\CompositeDataSet
 	 */
 	public function load(AbstractConnection $connection, AbstractDbTestCase $testCase)
 	{
-		$dataSets = new CompositeDataSet();
+		$dataSets = new DataSet\CompositeDataSet();
 
 		// 1. load base fixture first
 		$baseFixtureDir = $testCase->getBaseFixtureDir();
@@ -45,7 +45,7 @@ class FixtureLoader
 		$this->loadFixturesByClass($dataSets, $connection->getName(), $testCase);
 
 		// ensure we have at least one dataset
-		$dataSets->addDataSet(new \PHPUnit_Extensions_Database_DataSet_ArrayDataSet([]));
+		$dataSets->addDataSet(new DataSet\ArrayDataSet([]));
 
 		return $dataSets;
 	}
@@ -58,7 +58,7 @@ class FixtureLoader
 		return $fixturesPath;
 	}
 
-	public function loadFixturesByPath(CompositeDataSet $dataSets, $name, $path)
+	public function loadFixturesByPath(DataSet\CompositeDataSet $dataSets, $name, $path)
 	{
 		foreach($this->fixturesExtensions as $extension => $loader) {
 			$fixturePath = "{$path}/{$name}{$this->fixtureSuffix}.{$extension}";
@@ -75,7 +75,7 @@ class FixtureLoader
 		}
 	}
 
-	public function loadFixturesByClass(CompositeDataSet $dataSets, $name, AbstractDbTestCase $class)
+	public function loadFixturesByClass(DataSet\CompositeDataSet $dataSets, $name, AbstractDbTestCase $class)
 	{
 		$getFixtureMethod = [$class, 'getFixtures'];
 		if (!is_callable($getFixtureMethod)) {
@@ -88,7 +88,7 @@ class FixtureLoader
 		}
 
 		$dataSets->addDataSet(
-			new \PHPUnit_Extensions_Database_DataSet_ArrayDataSet($fixtures[$name])
+			new DataSet\ArrayDataSet($fixtures[$name])
 		);
 	}
 
@@ -99,17 +99,17 @@ class FixtureLoader
 			throw new \Exception("$path must return php array");
 		}
 
-		return new \PHPUnit_Extensions_Database_DataSet_ArrayDataSet($fixtures);
+		return new DataSet\ArrayDataSet($fixtures);
 	}
 
 	public function loadFromYaml($path)
 	{
-		return new \PHPUnit_Extensions_Database_DataSet_YamlDataSet($path);
+		return new DataSet\YamlDataSet($path);
 	}
 
 	public function loadFromJson($path)
 	{
 		$fixtures = json_decode(file_get_contents($path), true);
-		return new \PHPUnit_Extensions_Database_DataSet_ArrayDataSet($fixtures);
+		return new DataSet\ArrayDataSet($fixtures);
 	}
 }

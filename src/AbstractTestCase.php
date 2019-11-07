@@ -4,7 +4,7 @@ namespace HQ\Test;
 
 use Nette\DI\Container;
 
-abstract class AbstractTestCase extends \PHPUnit_Framework_TestCase
+abstract class AbstractTestCase extends \PHPUnit\Framework\TestCase
 {
 	/**
 	 * @var Container
@@ -26,7 +26,7 @@ abstract class AbstractTestCase extends \PHPUnit_Framework_TestCase
 		}
 	}
 
-	protected function setUp()
+	protected function setUp(): void
 	{
 		$this->beforeSetup();
 		$this->afterSetup();
@@ -41,7 +41,7 @@ abstract class AbstractTestCase extends \PHPUnit_Framework_TestCase
 	{
 	}
 
-	protected function tearDown()
+	protected function tearDown(): void
 	{
 		$this->beforeTearDown();
 		$this->afterTearDown();
