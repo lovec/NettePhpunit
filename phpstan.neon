@@ -1,0 +1,7 @@
+# More info on https://github.com/phpstan/phpstan
+parameters:
+	checkMissingIterableValueType: false
+
+	autoload_directories:
+		- %rootDir%/../../../src
+		- %rootDir%/../../../test
