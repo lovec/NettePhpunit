@@ -1,66 +1,57 @@
-<?php
+<?php declare(strict_types = 1);
 
 namespace HQ\Test;
 
 use HQ\Test\Connection\AbstractConnection;
-use HQ\Test\FixtureLoader;
 
 abstract class AbstractDbTestCase extends AbstractTestCase
 {
 	use \PHPUnit\DbUnit\TestCaseTrait;
 
-	const ENV_CREATE_SCHEMA = 'UNITTEST_CREATE_SCHEMA';
+	private const ENV_CREATE_SCHEMA = 'UNITTEST_CREATE_SCHEMA';
 
-	protected $initialized;
-	protected static $started;
-	protected $isInTransactionMode = true;
+	/** @var bool */
+	protected $initialized = FALSE;
 
-	/**
-	 * @var FixtureLoader
-	 */
+	/** @var bool */
+	protected static $started = FALSE;
+
+	/** @var bool */
+	protected $isInTransactionMode = TRUE;
+
+	/** @var FixtureLoader|NULL */
 	protected $fixtureLoader;
 
-	/**
-	 * @var AbstractConnection[]
-	 */
+	/** @var AbstractConnection[]|NULL */
 	protected $connections;
 
-	/**
-	 * @var \PHPUnit_Extensions_Database_ITester[]
-	 */
-	private $databaseTesters = [];
+	/** @var bool */
+	protected $forceCreateSchema = TRUE;
 
-	/**
-	 * This will improve test speed when we execute it later
-	 *
-	 * @var bool
-	 */
-	protected $forceCreateSchema = true;
+	/** @var bool */
+	protected $disableSchemaForeignKeyChecks = TRUE;
 
-	protected $disableSchemaForeignKeyChecks = true;
+	/** @var bool */
+	protected $disableFixturesForeignKeyChecks = TRUE;
 
-	/**
-	 * Disable foreign keys check when importing data fixtures
-	 *
-	 * @var bool
-	 */
-	protected $disableFixturesForeignKeyChecks = true;
 
 	/**
 	 * @return AbstractConnection[]
 	 */
-	abstract protected function getConnections();
-	abstract public function getBaseFixtureDir();
+	abstract protected function getConnections(): array;
+
+
+	abstract public function getBaseFixtureDir(): string;
+
 
 	/**
-	 * Return fixtures array
-	 *
-	 * @return array
+	 * @return mixed[]|array
 	 */
-	public function getFixtures()
+	public function getFixtures(): array
 	{
 		return [];
 	}
+
 
 	public function setUp(): void
 	{
@@ -71,65 +62,66 @@ abstract class AbstractDbTestCase extends AbstractTestCase
 		$this->afterSetup();
 	}
 
+
 	public function tearDown(): void
 	{
 		$this->beforeTearDown();
 		$this->closeTransactions();
 		$this->afterTearDown();
 
-		$this->databaseTesters = null;
 		foreach ($this->connections as $connection) {
-		    $connection->disconnect();
-        }
+			$connection->disconnect();
+		}
 	}
 
-	protected function init()
+
+	protected function init(): void
 	{
 		if ($this->initialized) {
 			return;
 		}
 
 		$this->initContainer();
-		$this->initialized = true;
+		$this->initialized = TRUE;
 
-		// do it only once, for db setup or repeat if not in transaction mode
+		// Do it only once, for db setup or repeat if not in transaction mode
 		if (!self::$started) {
 			$this->initDatabases();
-			self::$started = true;
+			self::$started = TRUE;
 		}
 	}
 
-	protected function initDatabases()
+
+	protected function initDatabases(): void
 	{
 		if (!$this->shouldCreateSchema()) {
 			return;
 		}
 
-		foreach($this->getInitializedConnections() as $connection) {
-
-			// build schema
-			$this->executeQueryWithForeignKeySetting(function() use ($connection) {
-
+		foreach ($this->getInitializedConnections() as $connection) {
+			$this->executeQueryWithForeignKeySetting(function() use ($connection): void {
 				$schemaContent = $this->getSchemaContent($connection->getSchemaFile());
 				$connection->createDatabaseSchema($schemaContent);
-
 			}, $connection, $this->disableSchemaForeignKeyChecks);
 		}
 	}
 
-	protected function getSchemaContent($path)
+
+	protected function getSchemaContent(string $path): string
 	{
 		if (!is_file($path)) {
 			throw new \Exception("No sql schema file found {$path}");
 		}
 
-		return file_get_contents($path);
+		return \Nette\Utils\FileSystem::read($path);
 	}
 
-	protected function beginTransactions()
+
+	protected function beginTransactions(): void
 	{
 		$fixtureLoader = $this->getFixtureLoader();
-		foreach($this->getInitializedConnections() as $connection) {
+
+		foreach ($this->getInitializedConnections() as $connection) {
 			if ($this->isInTransactionMode) {
 				$connection->beginTransaction();
 			}
@@ -138,17 +130,20 @@ abstract class AbstractDbTestCase extends AbstractTestCase
 		}
 	}
 
-	protected function closeTransactions()
+
+	protected function closeTransactions(): void
 	{
 		foreach ($this->getInitializedConnections() as $connection) {
 			if (!$this->isInTransactionMode) {
 				continue;
 			}
+
 			$connection->rollBack();
 		}
 	}
 
-	private function createDatabaseTester(AbstractConnection $connection)
+
+	private function createDatabaseTester(AbstractConnection $connection): \PHPUnit\DbUnit\DefaultTester
 	{
 		return new \PHPUnit\DbUnit\DefaultTester(
 			$this->createDefaultDBConnection(
@@ -157,80 +152,76 @@ abstract class AbstractDbTestCase extends AbstractTestCase
 		);
 	}
 
+
 	/**
 	 * Required by phpunit db testcase
 	 */
-	final public function getDataSet()
+	final public function getDataSet(): void
 	{
 		// TODO: Implement getDataSet() method.
 	}
 
-	/**
-	 * Required by PHPUnit DB TestCase
-	 *
-	 * @param null $connectionName
-	 * @return AbstractConnection
-	 * @throws \Exception
-	 */
-	final public function getConnection($connectionName = null)
+
+	final public function getConnection(?string $connectionName = NULL): AbstractConnection
 	{
 		if (!$connectionName) {
 			return current($this->getInitializedConnections());
 		}
 
 		$connections = $this->getInitializedConnections();
-		if (empty($connections[$connectionName])) {
+
+		if (!isset($connections[$connectionName])) {
 			throw new \Exception("Invalid connection name {$connectionName}");
 		}
 
 		return $connections[$connectionName];
 	}
 
-	protected function getFixtureLoader()
+
+	protected function getFixtureLoader(): FixtureLoader
 	{
-		if ($this->fixtureLoader) {
-			$this->fixtureLoader;
+		if (!$this->fixtureLoader) {
+			return $this->fixtureLoader = new FixtureLoader;
 		}
 
-		return $this->fixtureLoader = new FixtureLoader();
+		return $this->fixtureLoader;
 	}
 
-	protected function getInitializedConnections()
-	{
-		if ($this->connections) {
-			return $this->connections;
-		}
-
-		return $this->connections = $this->getConnections();
-	}
-
-	private function shouldCreateSchema()
-	{
-		return filter_var(getenv(self::ENV_CREATE_SCHEMA) ?: $this->forceCreateSchema, FILTER_VALIDATE_BOOLEAN) === true;
-	}
 
 	/**
-	 * Load database fixtures
-	 *
-	 * @param \HQ\Test\FixtureLoader $fixtureLoader
-	 * @param AbstractConnection $connection
+	 * @return AbstractConnection[]|array
 	 */
-	protected function loadFixtures(FixtureLoader $fixtureLoader, AbstractConnection $connection)
+	protected function getInitializedConnections(): array
 	{
-		$this->executeQueryWithForeignKeySetting(function() use ($fixtureLoader, $connection) {
+		if (!$this->connections) {
+			$this->connections = $this->getConnections();
+		}
 
+		return $this->connections;
+	}
+
+
+	private function shouldCreateSchema(): bool
+	{
+		return filter_var(getenv(self::ENV_CREATE_SCHEMA) ?: $this->forceCreateSchema, FILTER_VALIDATE_BOOLEAN) === TRUE;
+	}
+
+
+	protected function loadFixtures(FixtureLoader $fixtureLoader, AbstractConnection $connection): void
+	{
+		$this->executeQueryWithForeignKeySetting(function() use ($fixtureLoader, $connection): void {
 			$fixtureSet = $fixtureLoader->load($connection, $this);
 
-			// create database tester & setup tasks
+			// Create database tester & setup tasks
 			$databaseTester = $this->createDatabaseTester($connection);
 			$databaseTester->setSetUpOperation(\PHPUnit\DbUnit\Operation\Factory::INSERT());
 			$databaseTester->setDataSet($fixtureSet);
 			$databaseTester->onSetUp();
-
 		}, $connection, $this->disableFixturesForeignKeyChecks);
 	}
 
-	protected function executeQueryWithForeignKeySetting(\Closure $closure, AbstractConnection $connection, $disableForeignKeyChecks = true)
+
+	protected function executeQueryWithForeignKeySetting(\Closure $closure, AbstractConnection $connection, bool $disableForeignKeyChecks = TRUE): void
 	{
 		if ($disableForeignKeyChecks) {
 			$connection->disableForeignKeyChecks();
@@ -244,14 +235,20 @@ abstract class AbstractDbTestCase extends AbstractTestCase
 	}
 
 
-	protected function cleanTables(array $tableNames)
+	/**
+	 * @param string[]|array $tableNames
+	 */
+	protected function cleanTables(array $tableNames): void
 	{
 		foreach ($this->getInitializedConnections() as $connection) {
 			$connection->disableForeignKeyChecks();
+
 			foreach ($tableNames as $table) {
-				$connection->execute('DELETE FROM ' . $table . ' WHERE id > 0');
+				$connection->execute(sprintf('DELETE FROM %s WHERE id > 0', $table));
 			}
+
 			$connection->enableForeignKeyChecks();
 		}
 	}
+
 }

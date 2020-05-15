@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types = 1);
 
 namespace HQ\Test;
 
@@ -6,25 +6,22 @@ use Nette\DI\Container;
 
 abstract class AbstractTestCase extends \PHPUnit\Framework\TestCase
 {
-	/**
-	 * @var Container
-	 */
+	/** @var Container */
 	protected $container;
 
 
-	/**
-	 * @return \Nette\Di\Container
-	 */
-	abstract protected function getContainer();
+	abstract protected function getContainer(): \Nette\DI\Container;
 
-	protected function initContainer()
+
+	protected function initContainer(): void
 	{
 		$this->container = $this->getContainer();
 
 		if (!$this->container instanceof Container) {
-			throw new \Exception('$containerPath must return an instance of ' . Container::class);
+			throw new \Exception(sprintf('%s::getContainer() must return an instance of %s', static::class, Container::class));
 		}
 	}
+
 
 	protected function setUp(): void
 	{
@@ -32,14 +29,17 @@ abstract class AbstractTestCase extends \PHPUnit\Framework\TestCase
 		$this->afterSetup();
 	}
 
-	protected function beforeSetup()
+
+	protected function beforeSetup(): void
 	{
 		$this->initContainer();
 	}
 
-	protected function afterSetup()
+
+	protected function afterSetup(): void
 	{
 	}
+
 
 	protected function tearDown(): void
 	{
@@ -47,11 +47,14 @@ abstract class AbstractTestCase extends \PHPUnit\Framework\TestCase
 		$this->afterTearDown();
 	}
 
-	protected function beforeTearDown()
+
+	protected function beforeTearDown(): void
 	{
 	}
 
-	protected function afterTearDown()
+
+	protected function afterTearDown(): void
 	{
 	}
+
 }

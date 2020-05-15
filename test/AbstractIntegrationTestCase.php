@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types = 1);
 
 namespace NettePhpunit\Test;
 
@@ -10,32 +10,33 @@ use HQ\Test\Connection\PdoConnection;
 
 class AbstractIntegrationTestCase extends AbstractDbTestCase
 {
+
 	/**
 	 * @return AbstractConnection[]
 	 */
-	protected function getConnections()
+	protected function getConnections(): array
 	{
-		// prepare pdo
-		$database = $this->container->parameters['database'];
+		$database = $this->getContainer()->parameters['database'];
+
 		$pdo = new PDO($database['dsn'], $database['user'], $database['pass'], [
 			PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
 		]);
 
 		return [
-			new PdoConnection('default', __DIR__ . '/default-schema.sql', $pdo)
+			new PdoConnection('default', __DIR__ . '/default-schema.sql', $pdo),
 		];
 	}
 
-	public function getBaseFixtureDir()
+
+	public function getBaseFixtureDir(): string
 	{
 		return __DIR__;
 	}
 
-	/**
-	 * @return \Nette\Di\Container
-	 */
-	protected function getContainer()
+
+	protected function getContainer(): \Nette\DI\Container
 	{
 		return new Container(require __DIR__ . '/config.php');
 	}
+
 }

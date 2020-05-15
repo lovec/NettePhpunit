@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types = 1);
 
 namespace HQ\Test\Connection;
 
@@ -6,36 +6,31 @@ use Nette\Database\Context;
 
 class NetteConnection extends AbstractConnection
 {
-	/**
-	 * @var Context
-	 */
+	/** @var Context */
 	private $context;
 
-	/**
-	 * Connection constructor.
-	 *
-	 * @param $name
-	 * @param $schemaFile
-	 * @param Context $context
-	 */
+
 	public function __construct(
-		$name,
-		$schemaFile,
+		string $name,
+		string $schemaFile,
 		Context $context
 	)
 	{
-		$this->name = $name;
-		$this->schemaFile = $schemaFile;
+		parent::__construct($name, $schemaFile);
+
 		$this->context = $context;
 	}
 
-	public function getPdo()
+
+	public function getPdo(): \PDO
 	{
 		return $this->context->getConnection()->getPdo();
 	}
 
-    public function disconnect()
-    {
-        $this->context->getConnection()->disconnect();
-    }
+
+	public function disconnect(): void
+	{
+		$this->context->getConnection()->disconnect();
+	}
+
 }

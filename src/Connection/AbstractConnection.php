@@ -1,83 +1,86 @@
-<?php
+<?php declare(strict_types = 1);
 
 namespace HQ\Test\Connection;
 
 abstract class AbstractConnection
 {
+	/** @var string */
 	protected $name;
+
+	/** @var string */
 	protected $schemaFile;
 
-	/**
-	 * Connection constructor.
-	 *
-	 * @param $name
-	 * @param $schemaFile
-	 */
+
 	public function __construct(
-		$name,
-		$schemaFile
+		string $name,
+		string $schemaFile
 	)
 	{
 		$this->name = $name;
 		$this->schemaFile = $schemaFile;
 	}
 
-	/**
-	 * @return \PDO
-	 */
-	abstract public function getPdo();
 
-	/**
-	 * @return mixed
-	 */
-	public function getName()
+	abstract public function getPdo(): \PDO;
+
+
+	public function getName(): string
 	{
 		return $this->name;
 	}
 
-	public function createDatabaseSchema($schemaContent)
+
+	public function createDatabaseSchema(string $schemaContent): void
 	{
 		$this->execute($schemaContent);
 	}
 
-	/**
-	 * @return mixed
-	 */
-	public function getSchemaFile()
+
+	public function getSchemaFile(): string
 	{
 		return $this->schemaFile;
 	}
 
-	public function beginTransaction()
+
+	public function beginTransaction(): void
 	{
 		$this->getPdo()->beginTransaction();
 	}
 
-	public function rollback()
+
+	public function rollback(): void
 	{
 		$this->getPdo()->rollBack();
 	}
 
-	public function commit()
+
+	public function commit(): void
 	{
 		$this->getPdo()->commit();
 	}
 
-	public function execute($sql, array $params = [])
+
+	/**
+	 * @param mixed[]|array $params
+	 * @return bool|\PDOStatement
+	 */
+	public function execute(string $sql, array $params = [])
 	{
 		$stmt = $this->getPdo()->prepare($sql);
 		$stmt->execute($params);
 
 		return $stmt;
 	}
-	
-	public function explodeAndExecute($sql)
-    	{
+
+
+	public function explodeAndExecute(string $sql): void
+	{
 		$queryArray = explode(";\n", $sql);
 
-		foreach($queryArray as $queryArrayItem) {
+		foreach ($queryArray as $queryArrayItem) {
 			$queryArrayItem = trim($queryArrayItem);
-			if (empty($queryArrayItem)) {
+
+			if (!$queryArrayItem) {
 				continue;
 			}
 
@@ -85,22 +88,27 @@ abstract class AbstractConnection
 		}
 	}
 
-	public function enableForeignKeyChecks()
+
+	public function enableForeignKeyChecks(): void
 	{
-		$this->setForeignKeyChecks(true);
+		$this->setForeignKeyChecks(TRUE);
 	}
 
-	public function disableForeignKeyChecks()
+
+	public function disableForeignKeyChecks(): void
 	{
-		$this->setForeignKeyChecks(false);
+		$this->setForeignKeyChecks(FALSE);
 	}
 
-	public function setForeignKeyChecks($enable = true)
+
+	public function setForeignKeyChecks(bool $enable = TRUE): void
 	{
 		$this->execute(
 			sprintf('SET FOREIGN_KEY_CHECKS=%d', $enable)
 		);
 	}
 
-    abstract public function disconnect();
+
+	abstract public function disconnect(): void;
+
 }

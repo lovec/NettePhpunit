@@ -1,39 +1,34 @@
-<?php
+<?php declare(strict_types = 1);
 
 namespace HQ\Test\Connection;
 
 class PdoConnection extends AbstractConnection
 {
-	/**
-	 * @var \PDO
-	 */
+	/** @var \PDO|NULL */
 	private $pdo;
 
-	/**
-	 * Connection constructor.
-	 *
-	 * @param $name
-	 * @param $schemaFile
-	 * @param \PDO $pdo
-	 */
+
 	public function __construct(
-		$name,
-		$schemaFile,
+		string $name,
+		string $schemaFile,
 		\PDO $pdo
 	)
 	{
-		$this->name = $name;
-		$this->schemaFile = $schemaFile;
+		parent::__construct($name, $schemaFile);
+
 		$this->pdo = $pdo;
 	}
 
-	public function getPdo()
+
+	public function getPdo(): \PDO
 	{
 		return $this->pdo;
 	}
 
-    public function disconnect()
-    {
-        $this->pdo = null;
-    }
+
+	public function disconnect(): void
+	{
+		$this->pdo = NULL;
+	}
+
 }

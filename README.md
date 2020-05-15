@@ -15,7 +15,7 @@ composer require --dev hotel-quickly/nette-phpunit
 #### Usage
 In order to use Database test case, you must extend your base class from `HQ\Test\AbstractDbTestCase` and implement these 3 methods
 
-1. `getContainer` - This method will return `Nette\Di\Container` instance. 
+1. `getContainer` - This method will return `Nette\DI\Container` instance. 
 2. `getConnections` - Return an array of `HQ\Test\Connection\AbstractConnection(connectionName, baseSchema, ...)` connections object.
   * **connectionName** - A database connection name, which will be used as a prefix of fixture file. 
   * **baseSchema** - Database schema which includes `CREATE TABLE ...` sql statements. 
@@ -39,7 +39,7 @@ class YourBaseDbTestCase extends AbstractDbTestCase
         ];
     }
 
-    public function getBaseFixtureDir()
+    public function getBaseFixtureDir(): string
     {
         return __DIR__;
     }
@@ -80,7 +80,7 @@ This is pretty much the same as `class fixtures`, except that we define the fixt
 ```php
 class MyTest extends MyBaseDbTestCase
 {
-    public function getFixtures()
+    public function getFixtures(): array
     {
         return [
             '<connection-name>' => [
