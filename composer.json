@@ -15,7 +15,7 @@
         "kornrunner/dbunit": "^5.0",
         "nette/database": "^3.0.0",
         "nette/utils": "^3.1.0",
-        "phpunit/phpunit": "^9.0"
+        "phpunit/phpunit": "^9.5"
     },
     "require-dev": {
         "nette/di": "^3.0.0",
